@@ -1,7 +1,8 @@
 name: Automate build and deploy
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - '**'
 
 env:
   AWS_REGION: us-west-2
