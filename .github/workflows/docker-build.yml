@@ -1,7 +1,8 @@
 name: Automate build and deploy
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - '**'
 
 env:
   AWS_REGION: us-west-2
@@ -21,7 +22,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build and Push
         run: |
-          make push --file docker/django/Makefile -e VERSION=$(git rev-parse --short HEAD)
+          make push --file docker/django/Makefile -e VERSION=$(git rev-parse --short HEAD) -e REPO=cweider2/courtlistener
 
   deploy:
     needs: build
