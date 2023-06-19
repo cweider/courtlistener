@@ -11,6 +11,11 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      imageid_web: ${{ steps.build_push.imageid_web_prod }}
+      imageid_celery: ${{ steps.build_push.imageid_celery }}
+      imageid_scrape_rss: ${{ steps.build_push.imageid_scrape_rss }}
+      imageid_webhooks_retry: ${{ steps.build_push.imageid_webhooks_retry }}
     steps:
       - uses: actions/checkout@v3
       - name: Login to Docker Hub
@@ -18,9 +23,14 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build and Push
+      - id: build_push
+        name: Build and Push
         run: |
           make push --file docker/django/Makefile -e VERSION=$(git rev-parse --short HEAD)
+          echo "imageid_web_prod=freelawproject/courtlistener:$(git rev-parse --short HEAD)-web-prod" >> $GITHUB_OUTPUT
+          echo "imageid_celery=freelawproject/courtlistener:$(git rev-parse --short HEAD)-celery" >> $GITHUB_OUTPUT
+          echo "imageid_scrape_rss=freelawproject/courtlistener:$(git rev-parse --short HEAD)-scrape-rss" >> $GITHUB_OUTPUT
+          echo "imageid_webhooks_retry=freelawproject/courtlistener:$(git rev-parse --short HEAD)-webhooks-retry" >> $GITHUB_OUTPUT
 
   deploy:
     needs: build
@@ -43,13 +53,13 @@ jobs:
       # Do big complicated thing to get secrets into the image.
       # See: https://stackoverflow.com/a/52488906/64911
       run: |
-        kubectl run ${{ steps.vars.outputs.sha_short }} -it --rm -n ${{ env.EKS_NAMESPACE }} --image freelawproject/courtlistener:${{ steps.vars.outputs.sha_short }}-web-prod --restart Never --overrides='
+        kubectl run ${{ steps.vars.outputs.sha_short }} -it --rm -n ${{ env.EKS_NAMESPACE }} --image ${{needs.build.outputs.imageid_web_prod}} --restart Never --overrides='
         {
           "spec": {
             "containers": [
               {
                 "name": "${{ steps.vars.outputs.sha_short }}",
-                "image": "freelawproject/courtlistener:${{ steps.vars.outputs.sha_short }}-web-prod",
+                "image": "${{needs.build.outputs.imageid_web_prod}}",
                 "command": [
                     "/bin/sh",
                     "-c",
@@ -75,13 +85,13 @@ jobs:
       run: |
         echo "Found unapplied migrations. A pod named deploy-${{ steps.vars.outputs.sha_short }} has been created for you."
         echo "Shell into that pod, do a manual migration, delete the pod, and re-run this Github Action job."
-        kubectl run deploy-${{ steps.vars.outputs.sha_short }} -n ${{ env.EKS_NAMESPACE }} --image freelawproject/courtlistener:${{ steps.vars.outputs.sha_short }}-web-prod --restart Never --overrides='
+        kubectl run deploy-${{ env.deploy_name }} -n ${{ env.EKS_NAMESPACE }} --image ${{needs.build.outputs.imageid_web_prod}} --restart Never --overrides='
           {
             "spec": {
               "containers": [
                 {
                   "name": "deploy-${{ steps.vars.outputs.sha_short }}",
-                  "image": "freelawproject/courtlistener:${{ steps.vars.outputs.sha_short }}-web-prod",
+                  "image": "${{needs.build.outputs.imageid_web_prod}}",
                   "command": [
                       "/bin/sh",
                       "-c",
@@ -103,34 +113,34 @@ jobs:
 
     # Rollout new versions one by one (watch "deployments" in k9s)
     - name: Rollout cl-python
-      run: kubectl set image -n ${{ env.EKS_NAMESPACE }} deployment/cl-python web=freelawproject/courtlistener:${{ steps.vars.outputs.sha_short }}-web-prod
+      run: kubectl set image -n ${{ env.EKS_NAMESPACE }} deployment/cl-python web=${{needs.build.outputs.imageid_web_prod}}
     - name: Watch cl-python rollout status
       run: kubectl rollout status -n ${{ env.EKS_NAMESPACE }} deployment/cl-python
 
     - name: Rollout cl-celery-prefork
-      run: kubectl set image -n ${{ env.EKS_NAMESPACE }} deployment/cl-celery-prefork cl-celery-prefork=freelawproject/courtlistener:${{ steps.vars.outputs.sha_short }}-celery
+      run: kubectl set image -n ${{ env.EKS_NAMESPACE }} deployment/cl-celery-prefork cl-celery-prefork=${{needs.build.outputs.imageid_celery}}
     - name: Watch cl-celery-prefork rollout status
       run: kubectl rollout status -n ${{ env.EKS_NAMESPACE }} deployment/cl-celery-prefork
 
     - name: Rollout cl-celery-prefork-bulk
-      run: kubectl set image -n ${{ env.EKS_NAMESPACE }} deployment/cl-celery-prefork-bulk cl-celery-prefork-bulk=freelawproject/courtlistener:${{ steps.vars.outputs.sha_short }}-celery
+      run: kubectl set image -n ${{ env.EKS_NAMESPACE }} deployment/cl-celery-prefork-bulk cl-celery-prefork-bulk=${{needs.build.outputs.imageid_celery}}
     - name: Watch cl-celery-prefork-bulk rollout status
       run: kubectl rollout status -n ${{ env.EKS_NAMESPACE }} deployment/cl-celery-prefork-bulk
 
     - name: Rollout cl-scrape-rss
-      run: kubectl set image -n ${{ env.EKS_NAMESPACE }} deployment/cl-scrape-rss scrape-rss=freelawproject/courtlistener:${{ steps.vars.outputs.sha_short }}-scrape-rss
+      run: kubectl set image -n ${{ env.EKS_NAMESPACE }} deployment/cl-scrape-rss scrape-rss=${{needs.build.outputs.imageid_scrape_rss}}
     - name: Watch cl-scrape-rss rollout status
       run: kubectl rollout status -n ${{ env.EKS_NAMESPACE }} deployment/cl-scrape-rss
 
     - name: Rollout cl-retry-webhooks
-      run: kubectl set image -n ${{ env.EKS_NAMESPACE }} deployment/cl-retry-webhooks retry-webhooks=freelawproject/courtlistener:${{ steps.vars.outputs.sha_short }}-webhooks-retry
+      run: kubectl set image -n ${{ env.EKS_NAMESPACE }} deployment/cl-retry-webhooks retry-webhooks=${{needs.build.outputs.imageid_webhooks_retry}}
     - name: Watch cl-retry-webhooks rollout status
       run: kubectl rollout status -n ${{ env.EKS_NAMESPACE }} deployment/cl-retry-webhooks
 
     # Watch "cronjobs" in k9s
     - name: Update cronjobs
       run: |
-        CRONJOB_NAMES=$(kubectl get cronjobs -n court-listener -o jsonpath='{.items.*.metadata.name}' -l image_type=web-prod);
+        CRONJOB_NAMES=$(kubectl get cronjobs -n court-listener -o jsonpath='{.items.*.metadata.name}' -l imageid_type=web-prod);
         for name in $CRONJOB_NAMES; do
-           kubectl set image -n ${{ env.EKS_NAMESPACE }} CronJob/$name job=freelawproject/courtlistener:${{ steps.vars.outputs.sha_short }}-web-prod;
+           kubectl set image -n ${{ env.EKS_NAMESPACE }} CronJob/$name job=${{needs.build.outputs.imageid_web_prod}};
         done;
