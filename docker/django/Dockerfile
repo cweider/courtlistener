@@ -1,5 +1,13 @@
 ARG BUILD_ENV=prod
 
+FROM node:16 as webpack-build
+
+COPY . /opt/courtlistener
+
+WORKDIR /opt/courtlistener/cl
+RUN npm install
+RUN npx webpack --mode=production
+
 FROM python:3.11-slim as build-base
 
 RUN apt-get update --option "Acquire::Retries=3" --quiet=2 && \
@@ -11,6 +19,8 @@ RUN apt-get update --option "Acquire::Retries=3" --quiet=2 && \
         build-essential gcc python3-dev\
         # So postgres can compile and users can use dbshell
         libpq-dev postgresql-client \
+        # So we can use webpack to compile assets
+        nodejs npm \
         # For installing poetry and git-based deps
         curl git \
         # Other dependencies
@@ -65,6 +75,9 @@ RUN poetry install --no-root --without dev
 FROM build-${BUILD_ENV} as python-base
 
 COPY . /opt/courtlistener
+
+# Collect compiled assets from webpack-build stage
+COPY --from=webpack-build /opt/courtlistener/cl/assets/static-global/js/ /opt/courtlistener/cl/assets/static-global/js/
 
 WORKDIR /opt
 
