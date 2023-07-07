@@ -1282,13 +1282,13 @@ files = [
 
 [[package]]
 name = "drf-dynamic-fields"
-version = "0.3.1"
+version = "0.4.0"
 description = "Dynamically return subset of Django REST Framework serializer fields"
 optional = false
 python-versions = "*"
 files = [
-    {file = "drf_dynamic_fields-0.3.1-py2.py3-none-any.whl", hash = "sha256:fa5a7ea010476184d776b4b977d57d0090e651e8f897d83ed0c2f2bca9cbf704"},
-    {file = "drf_dynamic_fields-0.3.1.tar.gz", hash = "sha256:de75969abff74332f339d082931f1815dc91c2ff1ed6e741bd33d1d5057dceb1"},
+    {file = "drf_dynamic_fields-0.4.0-py2.py3-none-any.whl", hash = "sha256:48b879fe899905bc18593a61bca43e3b595dc3431b3b4ee499a9fd6c9a53f98c"},
+    {file = "drf_dynamic_fields-0.4.0.tar.gz", hash = "sha256:f20a5ec27d003db7595c9315db22217493dcaed575f3811d3e12f264c791c20c"},
 ]
 
 [[package]]
