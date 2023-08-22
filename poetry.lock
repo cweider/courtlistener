@@ -1235,14 +1235,18 @@ version = "3.14.0"
 description = "Web APIs for Django, made easy."
 optional = false
 python-versions = ">=3.6"
-files = [
-    {file = "djangorestframework-3.14.0-py3-none-any.whl", hash = "sha256:eb63f58c9f218e1a7d064d17a70751f528ed4e1d35547fdade9aaf4cd103fd08"},
-    {file = "djangorestframework-3.14.0.tar.gz", hash = "sha256:579a333e6256b09489cbe0a067e66abe55c6595d8926be6b99423786334350c8"},
-]
+files = []
+develop = false
 
 [package.dependencies]
 django = ">=3.0"
 pytz = "*"
+
+[package.source]
+type = "git"
+url = "https://github.com/encode/django-rest-framework.git"
+reference = "cc3c89a11c7ee9cf7cfd732e0a329c318ace71b2"
+resolved_reference = "cc3c89a11c7ee9cf7cfd732e0a329c318ace71b2"
 
 [[package]]
 name = "djangorestframework-filters"
@@ -4768,4 +4772,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11, <3.12"
-content-hash = "7db32198fa967b6cd07d76e67404b6ee1c64b09658d9437f5051338132f4ddb4"
+content-hash = "22b0f8d2c6f520054041b0b599f62f6a5ec839d2d9a1df8ff10ea2ec38d4d765"
