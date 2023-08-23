@@ -112,6 +112,7 @@ psycopg2 = "^2.9.6"
 juriscraper = "^2.5.51"
 httpx = {extras = ["http2"], version = "^0.24.1"}
 django-model-utils = "^4.3.1"
+inflection = "^0.5.1"  # necessary for DRF schema generation
 
 
 [tool.poetry.group.dev.dependencies]
