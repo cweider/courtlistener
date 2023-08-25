@@ -6,7 +6,7 @@ COPY . /opt/courtlistener
 
 WORKDIR /opt/courtlistener/cl
 RUN npm install
-RUN npx webpack --mode=production
+RUN npx webpack --mode=production --no-devtool
 
 FROM python:3.11-slim as build-base
 
