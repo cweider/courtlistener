@@ -2549,7 +2549,7 @@ name = "ndg-httpsclient"
 version = "0.5.1"
 description = "Provides enhanced HTTPS support for httplib and urllib2 using PyOpenSSL"
 optional = false
-python-versions = ">=2.7,<3.0.0 || >=3.4.0"
+python-versions = ">=2.7,<3.0.dev0 || >=3.4.dev0"
 files = [
     {file = "ndg_httpsclient-0.5.1-py2-none-any.whl", hash = "sha256:d2c7225f6a1c6cf698af4ebc962da70178a99bcde24ee6d1961c4f3338130d57"},
     {file = "ndg_httpsclient-0.5.1-py3-none-any.whl", hash = "sha256:dd174c11d971b6244a891f7be2b32ca9853d3797a72edb34fa5d7b07d8fff7d4"},
@@ -4257,13 +4257,13 @@ files = [
 
 [[package]]
 name = "types-redis"
-version = "4.5.4.1"
+version = "4.6.0.5"
 description = "Typing stubs for redis"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-redis-4.5.4.1.tar.gz", hash = "sha256:bf04192f415b2b42ecefd70bb4b91eb0352e48f2716a213e038e35c096a639c2"},
-    {file = "types_redis-4.5.4.1-py3-none-any.whl", hash = "sha256:2db530f54facec3149147bfe61d5ac24f5fe4e871823d95a601cd2c1d775d8a0"},
+    {file = "types-redis-4.6.0.5.tar.gz", hash = "sha256:5f179d10bd3ca995a8134aafcddfc3e12d52b208437c4529ef27e68acb301f38"},
+    {file = "types_redis-4.6.0.5-py3-none-any.whl", hash = "sha256:4f662060247a2363c7a8f0b7e52915d68960870ff16a749a891eabcf87ed0be4"},
 ]
 
 [package.dependencies]
@@ -4787,4 +4787,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11, <3.12"
-content-hash = "ac89c7d939f6f0f64e9dc0515c7584fb596e8915dd6b96d20622ce31f7c0f558"
+content-hash = "27fa8dd34baaf7d4e232cb902a4c5c0f3dd235796332c4dffbcf5a980b8972b7"
