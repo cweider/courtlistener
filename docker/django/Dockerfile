@@ -114,7 +114,6 @@ CMD celery \
     --concurrency=${CELERY_PREFORK_CONCURRENCY:-0} \
     --prefetch-multiplier=${CELERY_PREFETCH_MULTIPLIER:-1}
 
-#freelawproject/courtlistener:latest-web-dev
 FROM python-base as web-dev
 
 CMD python /opt/courtlistener/manage.py migrate && \
