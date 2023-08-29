@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        tag_flags: ["--exclude-tag selenium", "--tag selenium"]
+        tag_flags: ["--exclude-tag selenium"]
     steps:
       - name: Check out solr
         uses: actions/checkout@v3
@@ -66,11 +66,11 @@ jobs:
         with:
           context: ./courtlistener
           file: ./courtlistener/docker/django/Dockerfile
-          push: true
+          load: true
           target: web-dev
           build-args: |
             BUILD_ENV=dev
-          tags: localhost:5000/freelawproject/courtlistener:latest-web-dev-${{ github.sha }}
+          tags: freelawproject/courtlistener:latest-web-dev
           cache-from: type=gha
           cache-to: type=gha,mode=max
       - name: Build latest docker celery image
@@ -78,13 +78,16 @@ jobs:
         with:
           context: ./courtlistener
           file: ./courtlistener/docker/django/Dockerfile
-          push: true
+          load: true
           target: celery
           build-args: |
             BUILD_ENV=dev
-          tags: localhost:5000/freelawproject/courtlistener:latest-celery-${{ github.sha }}
+          tags: freelawproject/courtlistener:latest-celery
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: List docker images
+        run: docker image ls -a --no-trunc
 
       # Docker images are ready. Start them up.
       - name: Create docker network
@@ -92,9 +95,6 @@ jobs:
       - name: Start docker compose
         working-directory: courtlistener/docker/courtlistener
         run: docker-compose -f docker-compose.yml -f docker-compose.tmpfs.yml up -d
-        env:
-          CELERY_DOCKER_IMAGE: "localhost:5000/freelawproject/courtlistener:latest-celery-${{ github.sha }}"
-          DJANGO_DOCKER_IMAGE: "localhost:5000/freelawproject/courtlistener:latest-web-dev-${{ github.sha }}"
       - name: List docker images
         run: docker image ls -a --no-trunc
       - name: List docker container statuses
