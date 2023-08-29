@@ -23,6 +23,10 @@ services:
       dockerfile: ../../../courtlistener/docker/postgresql/Dockerfile
       args:
         POSTGRES_VERSION: 15.2-alpine
+      cache_from:
+        - type=gha
+      cache_to:
+        - type=gha,mode=max
     ports:
       - "5432:5432"
     environment:
@@ -68,6 +72,10 @@ services:
     container_name: cl-celery
     build:
       context: "../../"
+      cache_from:
+        - type=gha
+      cache_to:
+        - type=gha,mode=max
       dockerfile: "./docker/django/Dockerfile"
       args:
         BUILD_ENV: dev
@@ -90,6 +98,10 @@ services:
     build:
       context: "../../"
       dockerfile: "./docker/django/Dockerfile"
+      cache_from:
+        - type=gha
+      cache_to:
+        - type=gha,mode=max
       args:
         BUILD_ENV: dev
       target: web-dev
