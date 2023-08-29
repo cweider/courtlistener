@@ -33,6 +33,10 @@ from cl.tests.utils import MockResponse
 from cl.users.factories import UserFactory, UserProfileWithParentsFactory
 from cl.users.models import UserProfile
 
+class ForceFailureTest(TestCase):
+    """Test the basic views"""
+    def test_failure(self) -> None:
+        self.assertTrue(False)
 
 class BasicAPIPageTest(TestCase):
     """Test the basic views"""
