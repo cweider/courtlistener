@@ -1,9 +1,6 @@
 name: docker build and test
 
 on:
-  push:
-    branches:
-      - '**'
   pull_request:
     branches:
       - 'main'
