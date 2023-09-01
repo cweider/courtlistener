@@ -1221,14 +1221,17 @@ typing-extensions = "*"
 
 [[package]]
 name = "django-waffle"
-version = "3.0.0"
+version = "4.0.0"
 description = "A feature flipper for Django."
 optional = false
-python-versions = "*"
+python-versions = ">=3.8"
 files = [
-    {file = "django-waffle-3.0.0.tar.gz", hash = "sha256:3acef6692cb745ed8109f0a3076c5a27da38a716deb70d64c5fb404d65ccd910"},
-    {file = "django_waffle-3.0.0-py3-none-any.whl", hash = "sha256:dd8bcc62269b35000a05a7d87e8a000136b6b1568952e2e707ef450717b1cd9f"},
+    {file = "django-waffle-4.0.0.tar.gz", hash = "sha256:125e0c5a95a9b54739c77693f7454d717c1ec82b43eb5eb3e6e1ad69c0f75fe6"},
+    {file = "django_waffle-4.0.0-py3-none-any.whl", hash = "sha256:6426baad1573ca1908bd615650048f7948690f336058d37d3e3bb550ddf75cda"},
 ]
+
+[package.dependencies]
+django = ">=3.2"
 
 [[package]]
 name = "djangorestframework"
@@ -2545,7 +2548,7 @@ name = "ndg-httpsclient"
 version = "0.5.1"
 description = "Provides enhanced HTTPS support for httplib and urllib2 using PyOpenSSL"
 optional = false
-python-versions = ">=2.7,<3.0.0 || >=3.4.0"
+python-versions = ">=2.7,<3.0.dev0 || >=3.4.dev0"
 files = [
     {file = "ndg_httpsclient-0.5.1-py2-none-any.whl", hash = "sha256:d2c7225f6a1c6cf698af4ebc962da70178a99bcde24ee6d1961c4f3338130d57"},
     {file = "ndg_httpsclient-0.5.1-py3-none-any.whl", hash = "sha256:dd174c11d971b6244a891f7be2b32ca9853d3797a72edb34fa5d7b07d8fff7d4"},
@@ -4783,4 +4786,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11, <3.12"
-content-hash = "09bac37eb3abdf8670f8843cbb9cc002a6ef29be63450738d5350f02582f8e6e"
+content-hash = "1f8f64838e1aab9796badf38c746195b889764e5dc2d3c911f31db700afafee2"
