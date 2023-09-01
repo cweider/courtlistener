@@ -36,11 +36,11 @@ ENV PYTHONUNBUFFERED=1 \
     # paths
     # where to create the env
     VENV_PATH="/opt/pysetup/.venv" \
-    # this is where our requirements + virtual environment will live
+    # this is where our requirements
     PYSETUP_PATH="/opt/pysetup"
 
 RUN python -m venv $POETRY_HOME && \
-    $POETRY_HOME/bin/pip install poetry==$POETRY_VERSION --quiet
+    $POETRY_HOME/bin/pip install poetry==$POETRY_VERSION --quiet --upgrade
 
 # prepend poetry and venv to path
 ENV PATH="$VENV_PATH/bin:$PATH:$POETRY_HOME/bin"
