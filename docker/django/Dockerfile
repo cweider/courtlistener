@@ -32,20 +32,18 @@ ENV POETRY_VERSION=1.6.1 \
     # do not ask any interactive question
     POETRY_NO_INTERACTION=1
 
-# install poetry - respects $POETRY_VERSION & $POETRY_HOME
-RUN curl -sSL https://install.python-poetry.org | python3 -
-
-ARG POETRY_HOME
-
 ENV PYTHONUNBUFFERED=1 \
     # paths
     # where to create the env
     VENV_PATH="/opt/pysetup/.venv" \
-    # this is where our requirements + virtual environment will live
+    # this is where our requirements
     PYSETUP_PATH="/opt/pysetup"
 
+RUN python -m venv $POETRY_HOME && \
+    $POETRY_HOME/bin/pip install poetry==$POETRY_VERSION --quiet --upgrade
+
 # prepend poetry and venv to path
-ENV PATH="/opt/poetry/bin:$VENV_PATH/bin:$PATH"
+ENV PATH="$VENV_PATH/bin:$PATH:$POETRY_HOME/bin"
 
 
 FROM build-base as build-dev
