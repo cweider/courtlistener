@@ -35,8 +35,6 @@ ENV POETRY_VERSION=1.6.1 \
 # install poetry - respects $POETRY_VERSION & $POETRY_HOME
 RUN curl -sSL https://install.python-poetry.org | python3 -
 
-ARG POETRY_HOME
-
 ENV PYTHONUNBUFFERED=1 \
     # this is where our requirements will be loaded
     PYSETUP_PATH="/opt/pysetup"
