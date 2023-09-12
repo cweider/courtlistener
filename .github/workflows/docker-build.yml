@@ -23,10 +23,61 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - id: web
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: docker/django/Dockerfile
+          push: true
+          target: web-prod
+          tags: |
+            freelawproject/courtlistener:latest-web-prod
+            freelawproject/courtlistener:$(git rev-parse --short HEAD)-web-prod
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - id: celery
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: docker/django/Dockerfile
+          push: true
+          target: celery
+          tags: |
+            freelawproject/courtlistener:latest-celery
+            freelawproject/courtlistener:$(git rev-parse --short HEAD)-celery
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - id: scrape-rss
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: docker/django/Dockerfile
+          push: true
+          target: scrape-rss
+          tags: |
+            freelawproject/courtlistener:latest-scrape-rss
+            freelawproject/courtlistener:$(git rev-parse --short HEAD)-scrape-rss
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - id: webhooks-retry
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: docker/django/Dockerfile
+          push: true
+          target: webhooks-retry
+          tags: |
+            freelawproject/courtlistener:latest-webhooks-retry
+            freelawproject/courtlistener:$(git rev-parse --short HEAD)-webhooks-retry
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
       - id: build_push
         name: Build and Push
         run: |
-          make push --file docker/django/Makefile -e VERSION=$(git rev-parse --short HEAD)
           echo "imageid_web_prod=freelawproject/courtlistener:$(git rev-parse --short HEAD)-web-prod" >> $GITHUB_OUTPUT
           echo "imageid_celery=freelawproject/courtlistener:$(git rev-parse --short HEAD)-celery" >> $GITHUB_OUTPUT
           echo "imageid_scrape_rss=freelawproject/courtlistener:$(git rev-parse --short HEAD)-scrape-rss" >> $GITHUB_OUTPUT
