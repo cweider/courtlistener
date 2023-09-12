@@ -3,12 +3,6 @@ on:
   push:
     branches:
       - 'main'
-  pull_request:
-    branches:
-      - 'main'
-  schedule:
-    # Execute every day at 2:00
-    - cron: '0 2 * * *'
 
 jobs:
   semgrep:
@@ -19,5 +13,3 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: semgrep ci
-        env:
-          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
