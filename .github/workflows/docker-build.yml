@@ -34,8 +34,8 @@ jobs:
           push: true
           target: web-prod
           tags: |
-            freelawproject/courtlistener:latest-web-prod
-            freelawproject/courtlistener:${{github.sha}}-web-prod
+            cweider2/courtlistener:latest-web-prod
+            cweider2/courtlistener:${{github.sha}}-web-prod
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -47,8 +47,8 @@ jobs:
           push: true
           target: celery
           tags: |
-            freelawproject/courtlistener:latest-celery
-            freelawproject/courtlistener:${{github.sha}}-celery
+            cweider2/courtlistener:latest-celery
+            cweider2/courtlistener:${{github.sha}}-celery
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -60,8 +60,8 @@ jobs:
           push: true
           target: scrape-rss
           tags: |
-            freelawproject/courtlistener:latest-scrape-rss
-            freelawproject/courtlistener:${{github.sha}}-scrape-rss
+            cweider2/courtlistener:latest-scrape-rss
+            cweider2/courtlistener:${{github.sha}}-scrape-rss
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -73,8 +73,8 @@ jobs:
           push: true
           target: webhooks-retry
           tags: |
-            freelawproject/courtlistener:latest-webhooks-retry
-            freelawproject/courtlistener:${{github.sha}}-webhooks-retry
+            cweider2/courtlistener:latest-webhooks-retry
+            cweider2/courtlistener:${{github.sha}}-webhooks-retry
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
