@@ -30,8 +30,8 @@ jobs:
           file: docker/django/Dockerfile
           push: true
           tags: |
-            freelawproject/courtlistener:latest
-            freelawproject/courtlistener:${{github.sha}}
+            cweider2/courtlistener:latest
+            cweider2/courtlistener:${{github.sha}}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
