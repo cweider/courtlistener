@@ -58,7 +58,7 @@ jobs:
           context: .
           file: docker/django/Dockerfile
           push: true
-          target: scrape-rss
+          target: rss-scraper
           tags: |
             cweider2/courtlistener:latest-scrape-rss
             cweider2/courtlistener:${{github.sha}}-scrape-rss
@@ -71,7 +71,7 @@ jobs:
           context: .
           file: docker/django/Dockerfile
           push: true
-          target: webhooks-retry
+          target: retry-webhooks
           tags: |
             cweider2/courtlistener:latest-webhooks-retry
             cweider2/courtlistener:${{github.sha}}-webhooks-retry
