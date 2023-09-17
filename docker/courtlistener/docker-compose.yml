@@ -127,7 +127,7 @@ services:
       - JAVA_OPTS=-Dwebdriver.chrome.whitelistedIps=
 
   cl-doctor:
-    image: cweider/doctor:latest
+    image: ghcr.io/cweider/doctor:latest
     container_name: "cl-doctor"
     networks:
       - cl_net_overlay
