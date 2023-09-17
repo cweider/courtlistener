@@ -88,7 +88,7 @@ jobs:
       # Prepare Docker images
       - name: Pull docker images
         working-directory: courtlistener/docker/courtlistener
-        run: docker compose pull --quiet --ignore-buildable
+        run: docker compose pull --ignore-buildable
       - name: Build docker images
         working-directory: courtlistener/docker/courtlistener
         run: docker compose build
