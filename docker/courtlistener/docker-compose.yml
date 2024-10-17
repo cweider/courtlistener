@@ -126,7 +126,7 @@ services:
     container_name: cl-selenium
     image: seleniarm/standalone-chromium:113.0
     ports:
-      - 5900:5900  # VNC server
+      - 5901:5900  # VNC server
     volumes:
       - ${CL_SHM_DIR:-/dev/shm}:/dev/shm
     networks:

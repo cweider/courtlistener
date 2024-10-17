@@ -32,14 +32,7 @@ def check_and_create_es_index(es_document) -> None:
     :return: None
     """
     model_label = f"{es_document.django.model._meta.app_label}.{es_document.django.model.__name__}"
-    es = connections.get_connection()
-    health = es.cluster.health(wait_for_status="green", timeout="10s")
-    logger.info("Cluster status is now: %s", health["status"])
-    index_exists = es.indices.exists(index=es_document._index._name)
-    if not index_exists:
-        call_command(
-            "search_index", "--create", "--models", model_label, verbosity=0
-        )
+
 
 
 def create_search_indices(sender, **kwargs):
