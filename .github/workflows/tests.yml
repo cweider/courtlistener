@@ -101,7 +101,7 @@ jobs:
           # https://stackoverflow.com/q/35806102/
           # https://github.com/moby/moby/issues/7710
           mkdir selenium-screenshots
-          docker exec cl-django bash -c "mkdir /extract && mv /tmp/*-selenium.png /extract"
+          docker exec cl-django bash -c "mkdir /extract && mv /tmp/*-selenium.png /extract ||:"
           docker cp 'cl-django:/extract' selenium-screenshots/
       - name: Save selenium screenshot as Github artifacts
         uses: actions/upload-artifact@master
@@ -109,6 +109,7 @@ jobs:
         with:
           name: selenium-screenshots
           path: selenium-screenshots/extract
+          if-no-files-found: ignore
 
 # Cancel the current workflow (tests) for pull requests (head_ref) only. See:
 # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#example-using-a-fallback-value
