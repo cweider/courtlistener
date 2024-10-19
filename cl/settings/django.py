@@ -87,9 +87,15 @@ if not any([TESTING, DEBUG]):
     STORAGES["staticfiles"] = {
         "BACKEND": "cl.lib.storage.SubDirectoryS3ManifestStaticStorage",
     }
+    STORAGES["document"] = {
+        "BACKEND": "cl.lib.storage.IncrementingAWSMediaStorage",
+    }
 else:
     STORAGES["staticfiles"] = {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    }
+    STORAGES["document"] = {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
     }
 
 TEMPLATES = [
