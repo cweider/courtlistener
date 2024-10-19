@@ -10,6 +10,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.postgres.indexes import HashIndex
 from django.core.exceptions import ValidationError
+from django.core.files.storage import storages
 from django.db import IntegrityError, models, transaction
 from django.db.models import Q, QuerySet
 from django.db.models.functions import MD5
@@ -41,7 +42,6 @@ from cl.lib.search_index_utils import (
     normalize_search_dicts,
     null_map,
 )
-from cl.lib.storage import IncrementingAWSMediaStorage
 from cl.lib.string_utils import trunc
 from cl.lib.utils import deepgetattr
 from cl.search.docket_sources import DocketSources
@@ -664,7 +664,7 @@ class Docket(AbstractDateTimeModel, DocketSources):
         "original RECAP architecture. These fields are for backup purposes "
         f"only. {s3_warning_note}",
         upload_to=make_recap_path,
-        storage=IncrementingAWSMediaStorage(),
+        storage=storages["document"],
         max_length=1000,
         blank=True,
     )
@@ -2728,7 +2728,7 @@ class OpinionCluster(AbstractDateTimeModel):
     filepath_pdf_harvard = models.FileField(
         help_text="The case PDF from the Caselaw Access Project for this cluster",
         upload_to=make_upload_path,
-        storage=IncrementingAWSMediaStorage(),
+        storage=storages["document"],
         blank=True,
     )
     arguments = models.TextField(
@@ -3426,7 +3426,7 @@ class Opinion(AbstractDateTimeModel):
             f"stored. {s3_warning_note}"
         ),
         upload_to=make_upload_path,
-        storage=IncrementingAWSMediaStorage(),
+        storage=storages["document"],
         blank=True,
         db_index=True,
     )
