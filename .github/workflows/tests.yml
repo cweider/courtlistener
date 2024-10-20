@@ -103,9 +103,6 @@ jobs:
       - name: Pull docker images
         working-directory: courtlistener/docker/courtlistener
         run: docker compose pull --quiet --ignore-buildable
-      - name: Build docker images
-        working-directory: courtlistener/docker/courtlistener
-        run: docker compose build
       - name: List docker images
         run: docker image ls -a --no-trunc
 
