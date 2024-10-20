@@ -1,6 +1,12 @@
 # Run using `docker compose up`
 version: "3.7"
 
+secrets:
+  cl-postgres.crt:
+    file: ${CL_BASE_DIR:-../../}/docker/postgresql/cl-postgres.crt
+  cl-postgres.key:
+    file: ${CL_BASE_DIR:-../../}/docker/postgresql/cl-postgres.key
+
 networks:
   cl_net_overlay:
     driver: bridge
@@ -18,25 +24,24 @@ services:
   # use, you will have ot migrate it yourself. See DEVELOPING.md
   cl-postgresql:
     container_name: cl-postgres
-    build:
-      context: "${CL_BASE_DIR:-../../}/docker/postgresql"
-      dockerfile: "./Dockerfile"
-      args:
-        POSTGRES_VERSION: 15.2-alpine
+    image: postgres:15.2-alpine
     ports:
       - "5432:5432"
     environment:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "postgres"
       POSTGRES_DB: "courtlistener"
+    secrets:
+      - source: cl-postgres.crt
+      - source: cl-postgres.key
     command:
       - "postgres"
       - "-c"
       - "ssl=on"
       - "-c"
-      - "ssl_cert_file=/etc/ssl/private/cl-postgres.crt"
+      - "ssl_cert_file=/run/secrets/cl-postgres.crt"
       - "-c"
-      - "ssl_key_file=/etc/ssl/private/cl-postgres.key"
+      - "ssl_key_file=/run/secrets/cl-postgres.key"
     networks:
       - cl_net_overlay
 
@@ -77,6 +82,9 @@ services:
       - cl-redis
       - cl-doctor
       - cl-disclosures
+    secrets:
+      - source: cl-postgres.crt
+        target: /root/.postgresql/root.crt
     volumes:
       - ${CL_POSTGRES_RUN_DIR:-/var/run/postgresql}:/var/run/postgresql
       - ${CL_BASE_DIR:-../../}:/opt/courtlistener
@@ -88,6 +96,7 @@ services:
         - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
         - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
         - AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}
+        - DB_SSL_MODE=verify-full
 
   cl-django:
     container_name: cl-django
@@ -109,10 +118,12 @@ services:
     ports:
       - "8000:8000"
     user: root
+    secrets:
+      - source: cl-postgres.crt
+        target: /root/.postgresql/root.crt
     volumes:
       - ${CL_POSTGRES_RUN_DIR:-/var/run/postgresql}:/var/run/postgresql
       - ${CL_BASE_DIR:-../../}:/opt/courtlistener
-      - ${CL_BASE_DIR:-../../}/.postgresql:/root/.postgresql
     networks:
       - cl_net_overlay
     env_file:
@@ -121,6 +132,7 @@ services:
         - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
         - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
         - AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}
+        - DB_SSL_MODE=verify-full
 
   cl-selenium:
     container_name: cl-selenium
