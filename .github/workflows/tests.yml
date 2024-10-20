@@ -103,6 +103,9 @@ jobs:
       - name: Pull docker images
         working-directory: courtlistener/docker/courtlistener
         run: docker compose pull --quiet --ignore-buildable
+      - name: Build docker images
+        working-directory: courtlistener/docker/courtlistener
+        run: docker compose build cl-postgresql
       - name: List docker images
         run: docker image ls -a --no-trunc
 
@@ -112,7 +115,7 @@ jobs:
       - name: Start docker containers
         working-directory: courtlistener/docker/courtlistener
         run: >
-          docker compose -f docker-compose.yml -f docker-compose.tmpfs.yml -f <(echo 'services: { cl-django: { image: "courtlistener:latest" }, { cl-celery: { image: "courtlistener:latest" } }') up -d --no-build --pull=never
+          docker compose -f docker-compose.yml -f docker-compose.tmpfs.yml -f <(echo 'services: { cl-django: { image: "courtlistener:latest" }, cl-celery: { image: "courtlistener:latest" } }') up -d --no-build --pull=never
       - name: List docker containers
         run: docker ps -a --no-trunc
       - name: Show the docker startup logs
