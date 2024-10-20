@@ -66,6 +66,7 @@ services:
   # Task Server
   cl-celery:
     container_name: cl-celery
+    image: courtlistener:latest
     build:
       context: "../../"
       dockerfile: "./docker/django/Dockerfile"
@@ -91,6 +92,7 @@ services:
 
   cl-django:
     container_name: cl-django
+    image: courtlistener:latest
     build:
       context: "../../"
       dockerfile: "./docker/django/Dockerfile"
