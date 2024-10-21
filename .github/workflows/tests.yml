@@ -31,7 +31,7 @@ jobs:
           sudo find solr -type d -exec chmod g+s {} \;
           sudo find data -type d -exec chmod 775 {} \;
           sudo find solr -type d -exec chmod 775 {} \;
-          sudo find data -type f -exec chmod 664 {} \;
+          sudo find data -type d -exec chmod 664 {} \;
           sudo find solr -type f -exec chmod 664 {} \;
       - name: Check out CourtListener
         uses: actions/checkout@v4
