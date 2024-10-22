@@ -94,7 +94,7 @@ jobs:
         working-directory: courtlistener/docker/courtlistener
         run: docker compose logs --since 90m
       - name: CAT cl-postgres cert
-        run: docker exec cl-postgresql cat /etc/ssl/private/cl-postgres.crt
+        run: docker exec cl-postgres cat /etc/ssl/private/cl-postgres.crt
 
       # Run the checks and tests
       - name: List docker container statuses
