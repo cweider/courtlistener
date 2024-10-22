@@ -109,6 +109,7 @@ jobs:
           python /opt/courtlistener/manage.py test
           cl --verbosity=2 ${{ matrix.tag_flags }} --parallel
       - name: GET LOADS OF LOGS
+        working-directory: courtlistener/docker/courtlistener
         if: failure()
         run:  docker compose logs --since 90m
       - name: Export selenium results from docker to host
