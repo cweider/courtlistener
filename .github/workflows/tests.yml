@@ -92,7 +92,7 @@ jobs:
         run: docker compose -f docker-compose.yml -f docker-compose.tmpfs.yml up -d --no-build --pull=never cl-postgresql
       - name: Show the docker startup logs
         working-directory: courtlistener/docker/courtlistener
-        run: docker compose logs
+        run: docker compose logs --since 90m
       - name: CAT cl-postgres cert
         run: docker exec cl-postgresql cat /etc/ssl/private/cl-postgres.crt
 
