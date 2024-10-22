@@ -80,9 +80,6 @@ jobs:
       # Docker images are ready. Start them up.
       - name: Create docker network
         run: docker network create -d bridge --attachable cl_net_overlay
-      - name: Start docker containers
-        working-directory: courtlistener/docker/courtlistener
-        run: docker compose -f docker-compose.yml -f docker-compose.tmpfs.yml up -d --no-build --pull=never
       - name: List docker containers
         run: docker ps -a --no-trunc
       - name: CAT cl-django cert
