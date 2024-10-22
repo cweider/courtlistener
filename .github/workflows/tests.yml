@@ -85,13 +85,19 @@ jobs:
         run: docker compose -f docker-compose.yml -f docker-compose.tmpfs.yml up -d --no-build --pull=never
       - name: List docker containers
         run: docker ps -a --no-trunc
+      - name: Create docker network
+        run: docker exec cl-django cat /root/.postgresql/root.crt
       - name: Show the docker startup logs
         working-directory: courtlistener/docker/courtlistener
         run: docker compose logs
 
       # Run the checks and tests
+      - name: List docker container statuses
+        run: docker container ps
       - name: Check if migrations are missing
         run: docker exec cl-django python /opt/courtlistener/manage.py makemigrations --check --dry-run
+      - name: List docker container statuses
+        run: docker container ps
       - name: Run the tests!
         run: >
           docker exec -e SELENIUM_DEBUG=1 -e SELENIUM_TIMEOUT=30 cl-django
