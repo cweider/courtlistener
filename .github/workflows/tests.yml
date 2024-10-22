@@ -87,14 +87,14 @@ jobs:
         run: docker ps -a --no-trunc
       - name: CAT cl-django cert
         run: docker exec cl-django cat /root/.postgresql/root.crt
-      - name: CAT cl-postgres cert
-        run: docker exec cl-postgresql cat /run/secrets/cl-postgres.crt
       - name: Start cl-postgres
         working-directory: courtlistener/docker/courtlistener
         run: docker compose -f docker-compose.yml -f docker-compose.tmpfs.yml up -d --no-build --pull=never cl-postgres
       - name: Show the docker startup logs
         working-directory: courtlistener/docker/courtlistener
         run: docker compose logs
+      - name: CAT cl-postgres cert
+        run: docker exec cl-postgresql cat /etc/ssl/private/cl-postgres.crt
 
       # Run the checks and tests
       - name: List docker container statuses
