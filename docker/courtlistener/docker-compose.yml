@@ -34,10 +34,14 @@ services:
     secrets:
       - source: cl-postgres.crt
         target: /etc/ssl/private/cl-postgres.crt
-        mode: "0400"
+        uid: 0
+        gid: 0
+        mode: 0400
       - source: cl-postgres.key
         target: /etc/ssl/private/cl-postgres.key
-        mode: "0400"
+        mode: 0400
+        uid: 0
+        gid: 0
     command:
       - "postgres"
       - "-c"
