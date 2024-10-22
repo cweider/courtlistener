@@ -54,18 +54,6 @@ jobs:
       # dependencies
       - name: Set up docker Buildx
         uses: docker/setup-buildx-action@v3
-        with:
-          driver-opts: network=bridge
-      - name: Prebuild docker images
-        uses: docker/build-push-action@v6
-        with:
-          context: ./courtlistener
-          file: ./courtlistener/docker/django/Dockerfile
-          load: true
-          build-args: |
-            BUILD_ENV=dev
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
 
       # Prepare Docker images
       - name: Pull docker images
@@ -108,7 +96,7 @@ jobs:
       - name: GET LOADS OF LOGS
         working-directory: courtlistener/docker/courtlistener
         if: failure()
-        run:  docker compose logs --since 90m
+        run:  sleet 5 && docker compose logs --since 90m
       - name: Export selenium results from docker to host
         if: failure()
         run: |
