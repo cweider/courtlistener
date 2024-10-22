@@ -89,7 +89,7 @@ jobs:
         run: docker exec cl-django cat /root/.postgresql/root.crt
       - name: Start cl-postgres
         working-directory: courtlistener/docker/courtlistener
-        run: docker compose -f docker-compose.yml -f docker-compose.tmpfs.yml up -d --no-build --pull=never cl-postgres
+        run: docker compose -f docker-compose.yml -f docker-compose.tmpfs.yml up -d --no-build --pull=never cl-postgresql
       - name: Show the docker startup logs
         working-directory: courtlistener/docker/courtlistener
         run: docker compose logs
