@@ -37,7 +37,6 @@ services:
       - source: cl-postgres.key
         target: /etc/ssl/private/cl-postgres.key
     command:
-      - "postgres"
       - "-c"
       - "ssl=on"
       - "-c"
