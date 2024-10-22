@@ -85,8 +85,10 @@ jobs:
         run: docker compose -f docker-compose.yml -f docker-compose.tmpfs.yml up -d --no-build --pull=never
       - name: List docker containers
         run: docker ps -a --no-trunc
-      - name: Create docker network
+      - name: CAT cl-django cert
         run: docker exec cl-django cat /root/.postgresql/root.crt
+      - name: CAT cl-postgres cert
+        run: docker exec cl-postgresql cat /run/secrets/cl-postgres.crt
       - name: Show the docker startup logs
         working-directory: courtlistener/docker/courtlistener
         run: docker compose logs
