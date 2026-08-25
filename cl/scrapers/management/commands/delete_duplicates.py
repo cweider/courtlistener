@@ -197,7 +197,8 @@ def get_cleaned_content_hash(opinion: Opinion, site: OpinionSite) -> str:
     :param site: the juriscraper site
     :return: the sha1 hash
     """
-    content = opinion.local_path.read()
+    with opinion.local_path.open("rb") as local_path:
+        content = local_path.read()
     return sha1(force_bytes(site.cleanup_content(content)))
 
 

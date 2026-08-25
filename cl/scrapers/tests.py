@@ -506,9 +506,8 @@ class MakeObjectsContentEncodingTest(TestCase):
         opinion = opinions[0]
         self.addCleanup(opinion.local_path.delete, save=False)
 
-        opinion.local_path.open("rb")
-        stored = opinion.local_path.read()
-        opinion.local_path.close()
+        with opinion.local_path.open("rb") as local_path:
+            stored = local_path.read()
 
         self.assertEqual(stored, content.encode("utf-8"))
         self.assertEqual(opinion.local_path.size, len(content.encode("utf-8")))
