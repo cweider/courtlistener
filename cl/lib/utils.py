@@ -115,10 +115,10 @@ def remove_duplicate_dicts(dicts: list[dict]) -> list[dict]:
     return [dict(t) for t in {tuple(d.items()) for d in dicts}]
 
 
-def human_sort(
-    unordered_list: Iterable[str | tuple[str, Any]],
+def human_sort[T: str | tuple[str, Any]](
+    unordered_list: Iterable[T],
     key: str | None = None,
-) -> list[str | tuple[str, Any]]:
+) -> list[T]:
     """Human sort Lists of strings or list of dictionaries
 
     :param unordered_list: The list we want to sort
