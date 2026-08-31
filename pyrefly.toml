@@ -26,7 +26,6 @@ project-includes = [
     "cl/corpus_importer/management/commands/probe_scotus_dockets_daemon.py",
     "cl/corpus_importer/management/utils.py",
     "cl/corpus_importer/scotus_daemon_utils.py",
-    "cl/lib/decorators.py",
     "cl/recap/management/commands/remove_appellate_entries_with_long_numbers.py",
     "cl/recap/utils.py",
     "cl/scrapers/management/commands/back_scrape_dockets.py",
