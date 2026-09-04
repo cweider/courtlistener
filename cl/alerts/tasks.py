@@ -354,7 +354,7 @@ def send_alert_and_webhook(
 
     d = Docket.objects.get(pk=d_pk)
     if des_pks is not None:
-        new_des = DocketEntry.objects.filter(pk__in=des_pks)
+        new_des = list(DocketEntry.objects.filter(pk__in=des_pks))
     else:
         new_des = list(
             DocketEntry.objects.filter(date_created__gte=since, docket=d)
