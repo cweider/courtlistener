@@ -870,10 +870,17 @@
       "severity": "error"
     },
     {
+      "column": 38,
+      "path": "cl/corpus_importer/tasks.py",
+      "name": "bad-argument-type",
+      "concise_description": "Argument `list[Party]` is not assignable to parameter `parties` with type `list[dict[str, Any]]` in function `cl.recap.mergers.normalize_scotus_parties`",
+      "severity": "error"
+    },
+    {
       "column": 12,
       "path": "cl/corpus_importer/tasks.py",
-      "name": "bad-return",
-      "concise_description": "Returned type `Docket` is not assignable to declared return type `dict[str, Any] | None`",
+      "name": "bad-argument-type",
+      "concise_description": "Argument `list[DocketEntry]` is not assignable to parameter `docket_entries` with type `list[dict[str, Any]]` in function `add_scotus_docket_entries`",
       "severity": "error"
     },
     {
@@ -1952,13 +1959,6 @@
       "path": "cl/recap/tasks.py",
       "name": "bad-argument-type",
       "concise_description": "Argument `list[str | None]` is not assignable to parameter `unique_case_ids` with type `list[str]` in function `replicate_recap_email_to_subdockets`",
-      "severity": "error"
-    },
-    {
-      "column": 53,
-      "path": "cl/recap/tasks.py",
-      "name": "bad-argument-type",
-      "concise_description": "Argument `Docket` is not assignable to parameter `report_data` with type `dict[str, Any]` in function `cl.corpus_importer.tasks.merge_scotus_docket`",
       "severity": "error"
     },
     {

@@ -82,6 +82,9 @@ from juriscraper.scotus import (
     SCOTUSDocketReportHTM,
     SCOTUSDocketReportHTML,
 )
+from juriscraper.scotus.scotus_docket_report_base import (
+    Docket as SCOTUSDocketReportDocket,
+)
 from juriscraper.state.florida import FloridaCase
 from juriscraper.state.texas import (
     TexasCaseEvent,
@@ -4189,7 +4192,7 @@ def add_scotus_docket_entries(
 
 
 def merge_scotus_docket(
-    report_data: dict[str, Any],
+    report_data: SCOTUSDocketReportDocket,
     download_file: bool = True,
 ) -> tuple[Docket, bool, list[int]]:
     """Merge SCOTUS docket data into a Docket and ScotusDocketMetadata.
@@ -4216,9 +4219,9 @@ def merge_scotus_docket(
                 "Docket number can't be missing in SCOTUS dockets."
             )
 
-        case_name = report_data.get("case_name", "")
-        date_filed = report_data.get("date_filed")
-        lower_court_name = report_data.get("lower_court")
+        case_name = report_data["case_name"]
+        date_filed = report_data["date_filed"]
+        lower_court_name = report_data["lower_court"]
 
         d = async_to_sync(find_docket_object)(
             court.pk,
@@ -4251,16 +4254,14 @@ def merge_scotus_docket(
                 lower_court if lower_court is not None else d.appeal_from
             )
 
-        lower_court_case_numbers = report_data.get("lower_court_case_numbers")
-        lower_court_case_numbers_raw = report_data.get(
+        lower_court_case_numbers = report_data["lower_court_case_numbers"]
+        lower_court_case_numbers_raw = report_data[
             "lower_court_case_numbers_raw"
-        )
-        lower_court_decision_date = report_data.get(
-            "lower_court_decision_date"
-        )
-        lower_court_rehearing_denied_date = report_data.get(
+        ]
+        lower_court_decision_date = report_data["lower_court_decision_date"]
+        lower_court_rehearing_denied_date = report_data[
             "lower_court_rehearing_denied_date"
-        )
+        ]
         if (
             lower_court_case_numbers
             or lower_court_decision_date
@@ -4313,7 +4314,7 @@ def merge_scotus_docket(
             if d.pk
             else None
         )
-        capital_case = bool(report_data.get("capital_case"))
+        capital_case = bool(report_data["capital_case"])
         if (
             scotus_metadata is not None
             and not percolate_parties
@@ -4325,16 +4326,17 @@ def merge_scotus_docket(
         d.save()
 
         # Merge ScotusDocketMetadata
-        defaults = {
+        # TODO: replace `defaults` and `setattr` with explicit assignments
+        defaults: dict = {
             "capital_case": capital_case,
-            "date_discretionary_court_decision": report_data.get(
+            "date_discretionary_court_decision": report_data[
                 "discretionary_court_decision"
-            ),
+            ],
         }
-        if links := report_data.get("links", ""):
+        if links := report_data["links"]:
             defaults["linked_with"] = links
 
-        if qp_url := report_data.get("questions_presented"):
+        if qp_url := report_data["questions_presented"]:
             # Some pages use relative URLs (e.g. "../qp/14-00556qp.pdf"
             # found in 14-556.html). Resolve them against the SCOTUS base
             # URL so we always store an absolute URL.
@@ -4390,7 +4392,7 @@ def merge_scotus_docket(
 @app.task(bind=True)
 def process_scotus_docket(
     self,
-    report_data: dict[str, Any],
+    report_data: SCOTUSDocketReportDocket,
     download_file: bool = True,
 ) -> int:
     """Process and merge a SCOTUS docket report.
@@ -4494,7 +4496,7 @@ def download_scotus_document_pdf(self: Task, doc_pk: int) -> int | None:
 )
 def download_and_parse_scotus_docket(
     self: Task, bucket: str, s3_key: str
-) -> dict[str, Any] | None:
+) -> SCOTUSDocketReportDocket | None:
     """Download a SCOTUS docket file from S3 and parse it.
 
     Args:
@@ -4535,7 +4537,7 @@ def download_and_parse_scotus_docket(
     return data
 
 
-def ingest_scotus_docket(docket_data: dict[str, Any]) -> None:
+def ingest_scotus_docket(docket_data: SCOTUSDocketReportDocket) -> None:
     """Trigger the SCOTUS docket ingestion task that processes a SCOTUS docket report, downloads and merges related documents, and extracts document text from the resulting PDFs.
 
     Args:
