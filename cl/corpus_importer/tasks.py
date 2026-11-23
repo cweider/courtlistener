@@ -9,7 +9,7 @@ import logging
 import os
 import re
 import shutil
-from collections.abc import Iterator
+from collections.abc import Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from datetime import date
 from http import HTTPStatus
@@ -3783,7 +3783,9 @@ def download_qp_scotus_pdf(self, docket_id: int) -> None:
     )
 
 
-def enrich_scotus_attachments(docket_entries: list[dict[str, Any]]) -> None:
+def _enriched_scotus_docket_entries(
+    docket_entries: Sequence[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
     """Add sequential attachment numbers and pacer_doc_id to SCOTUS attachments.
 
     Args:
@@ -3792,18 +3794,41 @@ def enrich_scotus_attachments(docket_entries: list[dict[str, Any]]) -> None:
     Returns:
         None. The input list is changed in place.
     """
-    for entry in docket_entries:
-        attachments = entry.setdefault("attachments", [])
-        main_doc_short_desc = (
-            attachments[0]["description"] if attachments else ""
-        )
-        entry["pacer_doc_id"] = ""
 
-        for idx, attachment in enumerate(attachments, start=1):
-            attachment["attachment_number"] = idx
-            attachment["pacer_doc_id"] = ""
+    def enriched_attachment(
+        attachment: Mapping[str, Any], idx: int
+    ) -> dict[str, Any]:
+        return {
+            "description": attachment["description"],
+            "document_url": attachment["document_url"],
+            "document_number": attachment["document_number"],
+            "pacer_doc_id": "",
+            "attachment_number": idx,
+        }
 
-        entry["short_description"] = main_doc_short_desc
+    def enriched_docket_entry(
+        docket_entry: Mapping[str, Any],
+    ) -> dict[str, Any]:
+        return {
+            "date_filed": docket_entry["date_filed"],
+            "document_number": docket_entry["document_number"],
+            "description": docket_entry["description"],
+            "description_html": docket_entry["description_html"],
+            "attachments": [
+                enriched_attachment(attachment, idx)
+                for idx, attachment in enumerate(
+                    docket_entry["attachments"], start=1
+                )
+            ]
+            if docket_entry.get("attachments")
+            else [],
+            "pacer_doc_id": "",
+            "short_description": docket_entry["attachments"][0]["description"]
+            if docket_entry.get("attachments")
+            else "",
+        }
+
+    return [enriched_docket_entry(de) for de in docket_entries]
 
 
 def merge_scotus_document(
@@ -4134,14 +4159,14 @@ def add_scotus_docket_entries(
         SCOTUSDocketEntry was newly created (there's something to alert
         subscribers about).
     """
-    enrich_scotus_attachments(docket_entries)
+    enriched_docket_entries = _enriched_scotus_docket_entries(docket_entries)
     sequence_numbers = create_docket_entry_sequence_numbers(
-        docket_entries, "date_filed"
+        enriched_docket_entries, "date_filed"
     )
     all_doc_pks: list[int] = []
     content_updated = False
     for sequence_number, docket_entry in zip(
-        sequence_numbers, docket_entries, strict=True
+        sequence_numbers, enriched_docket_entries, strict=True
     ):
         de_created, de_pk, doc_pks = merge_scotus_docket_entry(
             docket,
