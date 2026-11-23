@@ -24,10 +24,7 @@ from rest_framework.serializers import CharField
 from waffle.testutils import override_flag
 
 from cl.alerts.utils import add_cutoff_timestamp_filter
-from cl.corpus_importer.tasks import (
-    add_scotus_docket_entries,
-    enrich_scotus_attachments,
-)
+from cl.corpus_importer.tasks import add_scotus_docket_entries
 from cl.favorites.factories import NoteFactory
 from cl.lib.elasticsearch_utils import (
     build_es_main_query,
@@ -7277,7 +7274,6 @@ class SCOTUSESIndexingSignalTest(
                     attachments=attachments,
                 )
             ]
-            enrich_scotus_attachments(docket_entries)
             add_scotus_docket_entries(
                 docket, docket_entries, download_file=False
             )

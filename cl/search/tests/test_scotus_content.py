@@ -15,7 +15,6 @@ from cl.corpus_importer.management.commands.download_scotus_pdfs import (
 from cl.corpus_importer.tasks import (
     add_scotus_docket_entries,
     download_qp_scotus_pdf,
-    enrich_scotus_attachments,
     ingest_scotus_docket,
     merge_scotus_docket,
     merge_scotus_document,
@@ -589,7 +588,6 @@ class ScotusDocketMergeTest(TestCase):
                 attachments=[],
             )
         ]
-        enrich_scotus_attachments(docket_entries)
         add_scotus_docket_entries(docket, docket_entries, download_file=False)
 
         entries = SCOTUSDocketEntry.objects.filter(docket=docket)
@@ -609,7 +607,6 @@ class ScotusDocketMergeTest(TestCase):
                 ],
             )
         ]
-        enrich_scotus_attachments(docket_entries)
         add_scotus_docket_entries(docket, docket_entries, download_file=False)
 
         entries = SCOTUSDocketEntry.objects.filter(docket=docket)
@@ -1136,7 +1133,6 @@ class ScotusPlaceholderDocumentTest(CLTestCase):
                 attachments=attachments,
             )
         ]
-        enrich_scotus_attachments(docket_entries)
         doc_pks, _ = add_scotus_docket_entries(
             self.docket, docket_entries, download_file=download_file
         )

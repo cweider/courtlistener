@@ -4134,6 +4134,7 @@ def add_scotus_docket_entries(
         SCOTUSDocketEntry was newly created (there's something to alert
         subscribers about).
     """
+    enrich_scotus_attachments(docket_entries)
     sequence_numbers = create_docket_entry_sequence_numbers(
         docket_entries, "date_filed"
     )
@@ -4349,7 +4350,6 @@ def merge_scotus_docket(
         )
 
     # Docket entries merger:
-    enrich_scotus_attachments(report_data["docket_entries"])
     start_time = now()
     doc_pks, content_updated = add_scotus_docket_entries(
         d, report_data["docket_entries"], download_file=download_file
