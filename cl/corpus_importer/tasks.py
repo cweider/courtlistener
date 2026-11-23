@@ -9,7 +9,7 @@ import logging
 import os
 import re
 import shutil
-from collections.abc import Iterator, Mapping, Sequence
+from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
 from datetime import date
 from http import HTTPStatus
@@ -83,7 +83,13 @@ from juriscraper.scotus import (
     SCOTUSDocketReportHTML,
 )
 from juriscraper.scotus.scotus_docket_report_base import (
+    Attachment as SCOTUSDocketReportAttachment,
+)
+from juriscraper.scotus.scotus_docket_report_base import (
     Docket as SCOTUSDocketReportDocket,
+)
+from juriscraper.scotus.scotus_docket_report_base import (
+    DocketEntry as SCOTUSDocketReportDocketEntry,
 )
 from juriscraper.state.florida import FloridaCase
 from juriscraper.state.texas import (
@@ -3786,21 +3792,45 @@ def download_qp_scotus_pdf(self, docket_id: int) -> None:
     )
 
 
+class _EnrichedSCOTUSDocketReportAttachment(TypedDict):
+    """A `SCOTUSDocketReportAttachment` with additional properties required for entry into the database."""
+
+    description: str
+    document_url: str
+    document_number: int | None
+
+    pacer_doc_id: Literal[""]
+    attachment_number: int
+
+
+class _EnrichedSCOTUSDocketReportDocketEntry(TypedDict):
+    """A `SCOTUSDocketReportDocketEntry` with additional properties required for entry into the database."""
+
+    date_filed: date | None
+    document_number: int | None
+    description: str
+    description_html: str
+    attachments: list[_EnrichedSCOTUSDocketReportAttachment]
+
+    pacer_doc_id: Literal[""]
+    short_description: str
+
+
 def _enriched_scotus_docket_entries(
-    docket_entries: Sequence[Mapping[str, Any]],
-) -> list[dict[str, Any]]:
+    docket_entries: Sequence[SCOTUSDocketReportDocketEntry],
+) -> list[_EnrichedSCOTUSDocketReportDocketEntry]:
     """Add sequential attachment numbers and pacer_doc_id to SCOTUS attachments.
 
     Args:
-        docket_entries: A list of docket entry dictionaries.
+        docket_entries: A sequence of docket entry dictionaries.
 
     Returns:
-        None. The input list is changed in place.
+        A list of enriched docket entries.
     """
 
     def enriched_attachment(
-        attachment: Mapping[str, Any], idx: int
-    ) -> dict[str, Any]:
+        attachment: SCOTUSDocketReportAttachment, idx: int
+    ) -> _EnrichedSCOTUSDocketReportAttachment:
         return {
             "description": attachment["description"],
             "document_url": attachment["document_url"],
@@ -3810,8 +3840,8 @@ def _enriched_scotus_docket_entries(
         }
 
     def enriched_docket_entry(
-        docket_entry: Mapping[str, Any],
-    ) -> dict[str, Any]:
+        docket_entry: SCOTUSDocketReportDocketEntry,
+    ) -> _EnrichedSCOTUSDocketReportDocketEntry:
         return {
             "date_filed": docket_entry["date_filed"],
             "document_number": docket_entry["document_number"],
@@ -3823,11 +3853,11 @@ def _enriched_scotus_docket_entries(
                     docket_entry["attachments"], start=1
                 )
             ]
-            if docket_entry.get("attachments")
+            if docket_entry["attachments"]
             else [],
             "pacer_doc_id": "",
             "short_description": docket_entry["attachments"][0]["description"]
-            if docket_entry.get("attachments")
+            if docket_entry["attachments"]
             else "",
         }
 
@@ -3836,7 +3866,7 @@ def _enriched_scotus_docket_entries(
 
 def merge_scotus_document(
     docket_entry: SCOTUSDocketEntry,
-    doc_data: dict[str, Any],
+    doc_data: _EnrichedSCOTUSDocketReportAttachment,
     download_file: bool = True,
 ) -> tuple[bool, int]:
     """Merge a single SCOTUSDocument attachment into CL.
@@ -3861,7 +3891,7 @@ def merge_scotus_document(
     """
     document_number = doc_data["document_number"]
     url = doc_data["document_url"]
-    description = doc_data.get("description", "")
+    description = doc_data["description"]
     attachment_number = doc_data["attachment_number"]
 
     # Retrieve existing object or create new one
@@ -3967,7 +3997,7 @@ def add_scotus_placeholder_document(docket_entry: SCOTUSDocketEntry) -> None:
 
 def fill_scotus_placeholder_document(
     docket_entry: SCOTUSDocketEntry,
-    attachment: dict[str, Any],
+    attachment: _EnrichedSCOTUSDocketReportAttachment,
     download_file: bool = False,
 ) -> int | None:
     """Turn the entry's placeholder, if it has one, into the given attachment by giving it the attachment's numbers. merge_scotus_document then finds it and fills in the rest, instead of creating a new document and leaving the empty placeholder next to it.
@@ -4022,7 +4052,7 @@ def fill_scotus_placeholder_document(
 def merge_scotus_docket_entry(
     docket: Docket,
     sequence_number: str,
-    input_docket_entry: dict[str, Any],
+    input_docket_entry: _EnrichedSCOTUSDocketReportDocketEntry,
     download_file: bool = True,
 ) -> tuple[bool, int | None, list[int]]:
     """Merges a SCOTUS docket entry into CL.
@@ -4046,7 +4076,7 @@ def merge_scotus_docket_entry(
     with transaction.atomic():
         # Acquire lock on the docket to prevent race conditions
         Docket.objects.select_for_update().get(pk=docket.pk)
-        entry_number = input_docket_entry.get("document_number")
+        entry_number = input_docket_entry["document_number"]
         date_filed = input_docket_entry["date_filed"]
         description = input_docket_entry["description"]
         de = None
@@ -4146,7 +4176,7 @@ def merge_scotus_docket_entry(
 
 def add_scotus_docket_entries(
     docket: Docket,
-    docket_entries: list[dict[str, Any]],
+    docket_entries: Sequence[SCOTUSDocketReportDocketEntry],
     download_file: bool = True,
 ) -> tuple[list[int], bool]:
     """Add or update SCOTUS docket entries for a docket.

@@ -871,13 +871,6 @@
     },
     {
       "column": 12,
-      "path": "cl/corpus_importer/tasks.py",
-      "name": "bad-argument-type",
-      "concise_description": "Argument `list[DocketEntry]` is not assignable to parameter `docket_entries` with type `list[dict[str, Any]]` in function `add_scotus_docket_entries`",
-      "severity": "error"
-    },
-    {
-      "column": 12,
       "path": "cl/custom_filters/templatetags/component_tags.py",
       "name": "missing-attribute",
       "concise_description": "Object of class `HttpRequest` has no attribute `_extensionless_scripts`",
