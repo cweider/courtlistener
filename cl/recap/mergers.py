@@ -5,7 +5,7 @@ import json
 import logging
 import re
 from collections import defaultdict
-from collections.abc import AsyncGenerator, Iterable, Mapping
+from collections.abc import AsyncGenerator, Iterable, Mapping, Sequence
 from copy import deepcopy
 from datetime import date, timedelta
 from typing import Any, Literal, Never, NotRequired, TypedDict, overload
@@ -28,6 +28,9 @@ from juriscraper.pacer.appellate_attachment_page import (
     AppellateAttachmentPageData,
 )
 from juriscraper.pacer.attachment_page import AttachmentPageData
+from juriscraper.scotus.scotus_docket_report_base import (
+    Party as SCOTUSDocketReportParty,
+)
 from waffle import switch_is_active
 
 from cl.alerts.utils import (
@@ -1747,7 +1750,7 @@ def disassociate_extraneous_entities(
 
 
 def normalize_scotus_parties(
-    parties: list[dict[str, Any]],
+    parties: Sequence[SCOTUSDocketReportParty],
 ) -> list[dict[str, Any]]:
     """Transform SCOTUS court party data to PACER-like format.
 
@@ -1765,50 +1768,50 @@ def normalize_scotus_parties(
 
     for party in parties:
         normalized_party = {
-            "name": party.get("name", ""),
-            "type": party.get("type", "Unknown"),
+            "name": party["name"],
+            "type": party["type"],
             "date_terminated": None,
             "extra_info": "",
             "attorneys": [],
         }
 
-        for atty in party.get("attorneys", []):
+        for atty in party["attorneys"]:
             # Build contact string from structured fields
             contact_parts = []
 
-            if atty.get("title"):
+            if atty["title"]:
                 contact_parts.append(atty["title"])
 
-            if atty.get("address"):
+            if atty["address"]:
                 contact_parts.append(atty["address"])
 
             # Build city, state zip line
             city_state_zip_parts = []
-            if atty.get("city"):
+            if atty["city"]:
                 city_state_zip_parts.append(atty["city"])
-            if atty.get("state"):
+            if atty["state"]:
                 city_state_zip_parts.append(atty["state"])
 
             if city_state_zip_parts:
                 line = ", ".join(city_state_zip_parts)
-                if atty.get("zip"):
+                if atty["zip"]:
                     line += f" {atty['zip']}"
                 contact_parts.append(line)
 
-            if atty.get("phone"):
+            if atty["phone"]:
                 contact_parts.append(atty["phone"])
 
-            if atty.get("email"):
+            if atty["email"]:
                 contact_parts.append(f"Email: {atty['email']}")
 
             # Build roles list
             roles = []
-            if atty.get("is_counsel_of_record"):
+            if atty["is_counsel_of_record"]:
                 roles.append("LEAD ATTORNEY")
 
             normalized_party["attorneys"].append(
                 {
-                    "name": atty.get("name", ""),
+                    "name": atty["name"],
                     "contact": "\n".join(contact_parts),
                     "roles": roles,
                 }

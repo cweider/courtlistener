@@ -870,13 +870,6 @@
       "severity": "error"
     },
     {
-      "column": 38,
-      "path": "cl/corpus_importer/tasks.py",
-      "name": "bad-argument-type",
-      "concise_description": "Argument `list[Party]` is not assignable to parameter `parties` with type `list[dict[str, Any]]` in function `cl.recap.mergers.normalize_scotus_parties`",
-      "severity": "error"
-    },
-    {
       "column": 12,
       "path": "cl/corpus_importer/tasks.py",
       "name": "bad-argument-type",
