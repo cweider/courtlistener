@@ -3803,65 +3803,17 @@ class _EnrichedSCOTUSDocketReportAttachment(TypedDict):
     attachment_number: int
 
 
-class _EnrichedSCOTUSDocketReportDocketEntry(TypedDict):
-    """A `SCOTUSDocketReportDocketEntry` with additional properties required for entry into the database."""
-
-    date_filed: date | None
-    document_number: int | None
-    description: str
-    description_html: str
-    attachments: list[_EnrichedSCOTUSDocketReportAttachment]
-
-    pacer_doc_id: Literal[""]
-    short_description: str
-
-
-def _enriched_scotus_docket_entries(
-    docket_entries: Sequence[SCOTUSDocketReportDocketEntry],
-) -> list[_EnrichedSCOTUSDocketReportDocketEntry]:
-    """Add sequential attachment numbers and pacer_doc_id to SCOTUS attachments.
-
-    Args:
-        docket_entries: A sequence of docket entry dictionaries.
-
-    Returns:
-        A list of enriched docket entries.
-    """
-
-    def enriched_attachment(
-        attachment: SCOTUSDocketReportAttachment, idx: int
-    ) -> _EnrichedSCOTUSDocketReportAttachment:
-        return {
-            "description": attachment["description"],
-            "document_url": attachment["document_url"],
-            "document_number": attachment["document_number"],
-            "pacer_doc_id": "",
-            "attachment_number": idx,
-        }
-
-    def enriched_docket_entry(
-        docket_entry: SCOTUSDocketReportDocketEntry,
-    ) -> _EnrichedSCOTUSDocketReportDocketEntry:
-        return {
-            "date_filed": docket_entry["date_filed"],
-            "document_number": docket_entry["document_number"],
-            "description": docket_entry["description"],
-            "description_html": docket_entry["description_html"],
-            "attachments": [
-                enriched_attachment(attachment, idx)
-                for idx, attachment in enumerate(
-                    docket_entry["attachments"], start=1
-                )
-            ]
-            if docket_entry["attachments"]
-            else [],
-            "pacer_doc_id": "",
-            "short_description": docket_entry["attachments"][0]["description"]
-            if docket_entry["attachments"]
-            else "",
-        }
-
-    return [enriched_docket_entry(de) for de in docket_entries]
+def _enriched_attachment(
+    attachment: SCOTUSDocketReportAttachment, idx: int
+) -> _EnrichedSCOTUSDocketReportAttachment:
+    """Add sequential attachment numbers and pacer_doc_id to SCOTUS attachments."""
+    return {
+        "description": attachment["description"],
+        "document_url": attachment["document_url"],
+        "document_number": attachment["document_number"],
+        "pacer_doc_id": "",
+        "attachment_number": idx,
+    }
 
 
 def merge_scotus_document(
@@ -4052,7 +4004,7 @@ def fill_scotus_placeholder_document(
 def merge_scotus_docket_entry(
     docket: Docket,
     sequence_number: str,
-    input_docket_entry: _EnrichedSCOTUSDocketReportDocketEntry,
+    input_docket_entry: SCOTUSDocketReportDocketEntry,
     download_file: bool = True,
 ) -> tuple[bool, int | None, list[int]]:
     """Merges a SCOTUS docket entry into CL.
@@ -4154,7 +4106,16 @@ def merge_scotus_docket_entry(
         de.date_filed = date_filed
         de.save()
 
-        attachments = input_docket_entry["attachments"]
+        attachments = (
+            [
+                _enriched_attachment(attachment, idx)
+                for idx, attachment in enumerate(
+                    input_docket_entry["attachments"], start=1
+                )
+            ]
+            if input_docket_entry["attachments"]
+            else []
+        )
         if not attachments:
             add_scotus_placeholder_document(de)
             return de_created, de.pk, []
@@ -4192,14 +4153,13 @@ def add_scotus_docket_entries(
         SCOTUSDocketEntry was newly created (there's something to alert
         subscribers about).
     """
-    enriched_docket_entries = _enriched_scotus_docket_entries(docket_entries)
     sequence_numbers = create_docket_entry_sequence_numbers(
-        enriched_docket_entries, "date_filed"
+        docket_entries, "date_filed"
     )
     all_doc_pks: list[int] = []
     content_updated = False
     for sequence_number, docket_entry in zip(
-        sequence_numbers, enriched_docket_entries, strict=True
+        sequence_numbers, docket_entries, strict=True
     ):
         de_created, de_pk, doc_pks = merge_scotus_docket_entry(
             docket,

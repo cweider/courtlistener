@@ -3128,8 +3128,8 @@ class SCOTUSEmailIntegrationTest(TestCase):
             entry_number=entry_data["document_number"],
         )
         # Pre-create the document for the first attachment.
-        # `_enriched_scotus_docket_entries` assigns attachment_number=1 to index 0,
-        # which is what merge_scotus_document will use in get_or_create.
+        # _enriched_attachment() assigns attachment_number=1 to index 0, which
+        # is what merge_scotus_document will use in get_or_create.
         existing_doc = await sync_to_async(SCOTUSDocumentFactory.create)(
             docket_entry=existing_entry,
             document_number=existing_attachment["document_number"],
