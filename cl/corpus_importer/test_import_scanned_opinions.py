@@ -1776,6 +1776,37 @@ class ImportScannedOpinionsTest(TestCase):
                 args=(expected_pks(),), queue="scans"
             )
 
+    def test_citation_finding_can_be_skipped(self) -> None:
+        """Does --skip-citation-finding import without queueing the task?
+
+        For a new case and a merged one. The opinions keep their scan XML,
+        which is what the opinion page shows until `find_citations` runs.
+        """
+        self.make_matching_cluster()
+        new_case_xml = (
+            self.scan_xml.replace("388 So. 3d 1", "390 So. 3d 5")
+            .replace("MERRITT", "HOLLOWAY")
+            .replace("4D2023-2459", "4D2023-1")
+        )
+        for label, xml, volume in [
+            ("merged opinion", self.scan_xml, "388"),
+            ("new case", new_case_xml, "390"),
+        ]:
+            with (
+                self.subTest(label),
+                mock.patch(
+                    f"{CITATIONS_TASK}.apply_async"
+                ) as mock_find_citations,
+                self.captureOnCommitCallbacks(execute=True),
+            ):
+                self.import_xml(xml, skip_citation_finding=True)
+            mock_find_citations.assert_not_called()
+            opinion = Opinion.objects.get(
+                cluster__citations__volume=volume, main_version__isnull=True
+            )
+            self.assertTrue(opinion.xml_scan)
+            self.assertEqual(opinion.html_with_citations, "")
+
     def test_failed_citation_queue_keeps_the_import(self) -> None:
         """Is an import kept and not reported failed when queuing fails?"""
         with (
@@ -2360,6 +2391,23 @@ class ImportFromScanningBucketTest(TestCase):
                         for key in expected
                     ],
                 )
+
+    def test_skipping_citation_finding_reaches_the_tasks(self) -> None:
+        """Do the import tasks get no citation queue with the skip flag?
+
+        They still go to the --queue themselves.
+        """
+        with mock.patch(IMPORT_TASK) as mock_task:
+            self.import_from_bucket(
+                {"export/3593/12.xml": self.scan_xml},
+                scan_id=["3593"],
+                queue="batch0",
+                skip_citation_finding=True,
+            )
+        mock_task.apply_async.assert_called_once_with(
+            args=("export/3593/12.xml", self.court.pk, None, False),
+            queue="batch0",
+        )
 
     def test_queues_the_files_of_each_scan_in_turn(self) -> None:
         """Are the files queued one scan at a time, in turn?

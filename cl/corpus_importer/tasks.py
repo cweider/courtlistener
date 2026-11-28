@@ -5920,7 +5920,7 @@ def merge_state_scrape_row(
 
 @app.task(ignore_result=True)
 def import_scanned_opinion_file(
-    key: str, court_id: str | None, queue: str, overwrite: bool
+    key: str, court_id: str | None, queue: str | None, overwrite: bool
 ) -> None:
     """Import a scanning project final XML file from the portal's bucket.
 
@@ -5930,7 +5930,8 @@ def import_scanned_opinion_file(
     Args:
         key: The S3 key of the file, e.g. "export/3593/12.xml".
         court_id: The CL court id, or None to look it up in the XML.
-        queue: The Celery queue of the citation-finding task.
+        queue: The Celery queue of the citation-finding task, or None to
+            leave citation finding to the `find_citations` command.
         overwrite: Overwrite the opinion if it was imported already and its
             XML changed.
     """
