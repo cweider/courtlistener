@@ -2340,20 +2340,6 @@
       "severity": "error"
     },
     {
-      "column": 20,
-      "path": "cl/scrapers/utils.py",
-      "name": "bad-index",
-      "concise_description": "Cannot index into `tuple[Pattern[Unknown], Unknown, Unknown, Unknown, Unknown, Unknown]`",
-      "severity": "error"
-    },
-    {
-      "column": 18,
-      "path": "cl/scrapers/utils.py",
-      "name": "bad-index",
-      "concise_description": "Cannot index into `tuple[Pattern[Unknown], Unknown, Unknown, Unknown, Unknown, Unknown]`",
-      "severity": "error"
-    },
-    {
       "column": 45,
       "path": "cl/scrapers/utils.py",
       "name": "bad-argument-type",
