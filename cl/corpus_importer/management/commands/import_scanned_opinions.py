@@ -1079,7 +1079,7 @@ def make_opinion(op: Tag, cluster_id: int) -> Opinion:
     )
 
 
-def queue_citation_finding(opinion_pks: list[int], queue: str) -> None:
+def queue_citation_finding(opinion_pks: list[int], queue: str | None) -> None:
     """Find the citations of the opinions once the import is committed.
 
     This builds `html_with_citations` from the scanned XML, replacing the
@@ -1091,10 +1091,17 @@ def queue_citation_finding(opinion_pks: list[int], queue: str) -> None:
     The opinions aren't percolated, since search alerts for old cases would
     only be noise.
 
+    Caveat: without a queue nothing is done, and `html_with_citations` stays
+    empty until `find_citations` is run. An overwrite clears it then (see
+    `replace_opinion_content`).
+
     Args:
         opinion_pks: The ids of the imported opinions.
-        queue: The Celery queue of the citation-finding task.
+        queue: The Celery queue of the citation-finding task, or None to
+            leave citation finding to the `find_citations` command.
     """
+    if queue is None:
+        return
 
     def queue_task() -> None:
         try:
@@ -1496,7 +1503,7 @@ def merge_into_cluster(
     cluster: OpinionCluster,
     plan: OpinionMergePlan,
     scan_case: ScanCase,
-    queue: str,
+    queue: str | None,
 ) -> None:
     """Merge a scanned opinion into an existing cluster.
 
@@ -1509,7 +1516,8 @@ def merge_into_cluster(
         plan: How the scanned opinions go into the cluster, from
             `plan_opinion_merge`.
         scan_case: The parsed scanned opinion.
-        queue: The Celery queue of the citation-finding task.
+        queue: The Celery queue of the citation-finding task, or None to
+            leave citation finding to the `find_citations` command.
     """
     with transaction.atomic():
         add_citations_to_cluster(scan_case.citations, cluster.id)
@@ -1558,12 +1566,13 @@ def merge_into_cluster(
         store_scan_xml(cluster, scan_case, update_fields)
 
 
-def add_new_case(scan_case: ScanCase, queue: str) -> OpinionCluster:
+def add_new_case(scan_case: ScanCase, queue: str | None) -> OpinionCluster:
     """Create the docket, cluster, citations and opinions of a scanned case.
 
     Args:
         scan_case: The parsed scanned opinion.
-        queue: The Celery queue of the citation-finding task.
+        queue: The Celery queue of the citation-finding task, or None to
+            leave citation finding to the `find_citations` command.
 
     Returns:
         The new cluster.
@@ -1728,7 +1737,7 @@ def get_byline_changes(
 
 
 def replace_opinion_content(
-    opinion: Opinion, xml: str, scan_case: ScanCase
+    opinion: Opinion, xml: str, scan_case: ScanCase, finding_citations: bool
 ) -> None:
     """Store the corrected XML of a scanned opinion as its main version.
 
@@ -1739,9 +1748,19 @@ def replace_opinion_content(
         opinion: The saved scanned opinion.
         xml: Its new `<opinion>` XML.
         scan_case: The parsed scanned opinion.
+        finding_citations: Whether a citation-finding task is queued for
+            the opinion, which rebuilds `html_with_citations` from the new
+            XML. When it isn't, that field is cleared, since the opinion
+            page shows it instead of the XML and it has the old text. It
+            also makes the opinion one that `find_citations` picks up with
+            --no-html-with-citations and --modified-after.
     """
     opinion.xml_scan = xml
-    opinion.save(update_fields=["xml_scan"])
+    update_fields = ["xml_scan"]
+    if not finding_citations:
+        opinion.html_with_citations = ""
+        update_fields += ["html_with_citations", "date_modified"]
+    opinion.save(update_fields=update_fields)
     opinion.contents.filter(is_main_version=True).update(is_main_version=False)
     add_opinion_content(opinion, scan_case)
 
@@ -1750,7 +1769,7 @@ def overwrite_scan(
     cluster: OpinionCluster,
     scan_case: ScanCase,
     file_path: str,
-    queue: str,
+    queue: str | None,
     dry_run: bool = False,
 ) -> bool:
     """Overwrite a scan imported before with its new XML.
@@ -1769,7 +1788,8 @@ def overwrite_scan(
         scan_case: The parsed scanned opinion.
         file_path: The local path or the S3 key of the XML, used for
             logging.
-        queue: The Celery queue of the citation-finding task.
+        queue: The Celery queue of the citation-finding task, or None to
+            leave citation finding to the `find_citations` command.
         dry_run: Only log what would be overwritten.
 
     Returns:
@@ -1848,7 +1868,9 @@ def overwrite_scan(
     )
     with transaction.atomic():
         for opinion, xml in changed:
-            replace_opinion_content(opinion, xml, scan_case)
+            replace_opinion_content(
+                opinion, xml, scan_case, finding_citations=queue is not None
+            )
         # The stored XML always changes, so date_modified is always saved
         update_fields = ["date_modified"]
         if headmatter is not None:
@@ -1932,7 +1954,7 @@ def import_scanned_opinion(
     xml: str,
     file_path: str,
     court_id: str | None,
-    queue: str,
+    queue: str | None,
     dry_run: bool = False,
     overwrite: bool = False,
 ) -> bool:
@@ -1950,7 +1972,8 @@ def import_scanned_opinion(
         file_path: The local path or the S3 key of the XML, used for
             logging.
         court_id: The CL court id, or None to look it up in the XML.
-        queue: The Celery queue of the citation-finding task.
+        queue: The Celery queue of the citation-finding task, or None to
+            leave citation finding to the `find_citations` command.
         dry_run: Only log whether the opinion would be skipped, merged or
             added, without writing to the database or uploading files.
         overwrite: Overwrite opinions already imported whose XML changed,
@@ -1974,7 +1997,7 @@ def merge_scan_case(
     cluster: OpinionCluster,
     scan_case: ScanCase,
     file_path: str,
-    queue: str,
+    queue: str | None,
     dry_run: bool,
 ) -> bool:
     """Merge a scanned opinion into the cluster it matched, if it can be.
@@ -1987,7 +2010,8 @@ def merge_scan_case(
         scan_case: The parsed scanned opinion.
         file_path: The local path or the S3 key of the XML, used for
             logging.
-        queue: The Celery queue of the citation-finding task.
+        queue: The Celery queue of the citation-finding task, or None to
+            leave citation finding to the `find_citations` command.
         dry_run: Only log what would be done.
 
     Returns:
@@ -2050,7 +2074,7 @@ def merge_scan_case(
 def import_scan_case(
     scan_case: ScanCase,
     file_path: str,
-    queue: str,
+    queue: str | None,
     dry_run: bool,
     overwrite: bool,
 ) -> bool:
@@ -2060,7 +2084,8 @@ def import_scan_case(
         scan_case: The parsed scanned opinion.
         file_path: The local path or the S3 key of the XML, used for
             logging.
-        queue: The Celery queue of the citation-finding task.
+        queue: The Celery queue of the citation-finding task, or None to
+            leave citation finding to the `find_citations` command.
         dry_run: Only log what would be done.
         overwrite: Overwrite the opinion if it was imported already.
 
@@ -2119,7 +2144,7 @@ def import_xml_file(
     read: Callable[[str], str],
     file_path: str,
     court_id: str | None,
-    queue: str,
+    queue: str | None,
     dry_run: bool = False,
     overwrite: bool = False,
 ) -> bool:
@@ -2133,7 +2158,8 @@ def import_xml_file(
         read: Reads the XML of `file_path`.
         file_path: The local path or the S3 key of the XML.
         court_id: The CL court id, or None to look it up in the XML.
-        queue: The Celery queue of the citation-finding task.
+        queue: The Celery queue of the citation-finding task, or None to
+            leave citation finding to the `find_citations` command.
         dry_run: Only log what would be done.
         overwrite: Overwrite the opinion if it was imported already.
 
@@ -2156,7 +2182,7 @@ def import_xml_file(
 
 
 def import_s3_xml_file(
-    key: str, court_id: str | None, queue: str, overwrite: bool
+    key: str, court_id: str | None, queue: str | None, overwrite: bool
 ) -> bool:
     """Read and import a final XML file from the scanning portal's bucket.
 
@@ -2165,7 +2191,8 @@ def import_s3_xml_file(
     Args:
         key: The S3 key of the file.
         court_id: The CL court id, or None to look it up in the XML.
-        queue: The Celery queue of the citation-finding task.
+        queue: The Celery queue of the citation-finding task, or None to
+            leave citation finding to the `find_citations` command.
         overwrite: Overwrite the opinion if it was imported already.
 
     Returns:
@@ -2270,6 +2297,15 @@ class Command(VerboseCommand):
             "the workers import. The queues are first measured after twice "
             "this many files.",
         )
+        parser.add_argument(
+            "--skip-citation-finding",
+            action="store_true",
+            help="Don't queue a citation-finding task for each imported "
+            "file, which is much slower than the import itself. The "
+            "opinions are shown from their scan XML, without linked "
+            "citations, until the find_citations command is run over them, "
+            "e.g. with --no-html-with-citations and --modified-after.",
+        )
 
     def handle(self, *args: Any, **options: Any) -> None:
         """Import the XML files of the given path or scans.
@@ -2291,6 +2327,14 @@ class Command(VerboseCommand):
         court_id, overwrite = options["court_id"], options["overwrite"]
         dry_run, queue = options["dry_run"], options["queue"]
         in_process = bool(options["path"]) or dry_run
+        citation_queue = queue
+        if options["skip_citation_finding"]:
+            citation_queue = None
+            if not dry_run:
+                logger.warning(
+                    "The imported opinions won't have html_with_citations. "
+                    "Run find_citations over them afterwards."
+                )
         if options["path"]:
             file_paths = xml_file_paths(options["path"])
             read = read_local_xml
@@ -2342,12 +2386,18 @@ class Command(VerboseCommand):
                 break
             if in_process:
                 if not import_xml_file(
-                    read, file_path, court_id, queue, dry_run, overwrite
+                    read,
+                    file_path,
+                    court_id,
+                    citation_queue,
+                    dry_run,
+                    overwrite,
                 ):
                     continue
             else:
                 import_scanned_opinion_file.apply_async(
-                    args=(file_path, court_id, queue, overwrite), queue=queue
+                    args=(file_path, court_id, citation_queue, overwrite),
+                    queue=queue,
                 )
                 last_queued = file_path
             count += 1
