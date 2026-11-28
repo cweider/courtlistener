@@ -1092,7 +1092,8 @@ def queue_citation_finding(opinion_pks: list[int], queue: str | None) -> None:
     only be noise.
 
     Caveat: without a queue nothing is done, and `html_with_citations` stays
-    empty, or as it was on an overwrite, until `find_citations` is run.
+    empty until `find_citations` is run. An overwrite clears it then (see
+    `replace_opinion_content`).
 
     Args:
         opinion_pks: The ids of the imported opinions.
@@ -1736,7 +1737,7 @@ def get_byline_changes(
 
 
 def replace_opinion_content(
-    opinion: Opinion, xml: str, scan_case: ScanCase
+    opinion: Opinion, xml: str, scan_case: ScanCase, finding_citations: bool
 ) -> None:
     """Store the corrected XML of a scanned opinion as its main version.
 
@@ -1747,9 +1748,19 @@ def replace_opinion_content(
         opinion: The saved scanned opinion.
         xml: Its new `<opinion>` XML.
         scan_case: The parsed scanned opinion.
+        finding_citations: Whether a citation-finding task is queued for
+            the opinion, which rebuilds `html_with_citations` from the new
+            XML. When it isn't, that field is cleared, since the opinion
+            page shows it instead of the XML and it has the old text. It
+            also makes the opinion one that `find_citations` picks up with
+            --no-html-with-citations and --modified-after.
     """
     opinion.xml_scan = xml
-    opinion.save(update_fields=["xml_scan"])
+    update_fields = ["xml_scan"]
+    if not finding_citations:
+        opinion.html_with_citations = ""
+        update_fields += ["html_with_citations", "date_modified"]
+    opinion.save(update_fields=update_fields)
     opinion.contents.filter(is_main_version=True).update(is_main_version=False)
     add_opinion_content(opinion, scan_case)
 
@@ -1857,7 +1868,9 @@ def overwrite_scan(
     )
     with transaction.atomic():
         for opinion, xml in changed:
-            replace_opinion_content(opinion, xml, scan_case)
+            replace_opinion_content(
+                opinion, xml, scan_case, finding_citations=queue is not None
+            )
         # The stored XML always changes, so date_modified is always saved
         update_fields = ["date_modified"]
         if headmatter is not None:

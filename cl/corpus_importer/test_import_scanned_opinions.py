@@ -1003,6 +1003,50 @@ class ImportScannedOpinionsTest(TestCase):
                     )
                 transaction.set_rollback(True)
 
+    def test_overwrite_without_citation_finding_clears_the_old_html(
+        self,
+    ) -> None:
+        """Does an overwrite drop the stale html when citations are skipped?
+
+        The opinion page shows `html_with_citations` instead of the scan
+        XML, so the old one would hide the correction. Clearing it and
+        saving the modification date also lets `find_citations` select the
+        opinion with --no-html-with-citations and --modified-after.
+
+        With citation finding, the html is left for the task to rebuild.
+        """
+        imported_at = datetime(2026, 3, 16, 12, tzinfo=UTC)
+        overwritten_at = datetime(2026, 3, 17, 12, tzinfo=UTC)
+        corrected = self.scan_xml.replace(
+            "confession of error", "confession of an error"
+        )
+        for skip, expected_html, expected_modified in [
+            (True, "", overwritten_at),
+            (False, "<p>old text</p>", imported_at),
+        ]:
+            with (
+                self.subTest(skip_citation_finding=skip),
+                transaction.atomic(),
+                empty_scan_storage(),
+                mock.patch(f"{CITATIONS_TASK}.apply_async"),
+            ):
+                with time_machine.travel(imported_at, tick=False):
+                    self.import_scan()
+                    opinion = Opinion.objects.get()
+                    opinion.html_with_citations = "<p>old text</p>"
+                    opinion.save()
+
+                with time_machine.travel(overwritten_at, tick=False):
+                    self.import_xml(
+                        corrected, overwrite=True, skip_citation_finding=skip
+                    )
+
+                opinion.refresh_from_db()
+                self.assertIn("an error", opinion.xml_scan)
+                self.assertEqual(opinion.html_with_citations, expected_html)
+                self.assertEqual(opinion.date_modified, expected_modified)
+                transaction.set_rollback(True)
+
     def test_overwrite_finds_the_scan_after_a_citation_correction(
         self,
     ) -> None:
