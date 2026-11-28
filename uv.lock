@@ -1,5 +1,5 @@
 version = 1
-revision = 5
+revision = 3
 requires-python = "==3.15.*"
 resolution-markers = [
     "platform_python_implementation == 'PyPy' and sys_platform == 'win32'",
@@ -691,11 +691,14 @@ wheels = [
 
 [[package]]
 name = "courts-db"
-version = "0.10.27"
+version = "0.10.28"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/f9/b5/67faa4ae8e273708256a08e71e9173f4671dbe274a35256c10ec054e446c/courts_db-0.10.27.tar.gz", hash = "sha256:0562bff60ad2267d5aea7a1acf327af4b00fdd893783612135372101a45e313e", size = 139584, upload-time = "2026-03-25T18:46:00.138Z" }
+dependencies = [
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/27/22/f3c20aee3437f91c05948dc5dc929b301b174f3b611c73e8c8a27dc09b58/courts_db-0.10.28.tar.gz", hash = "sha256:87bc098e10f1010fe1325207757e1d0ddcca30527083cda1a78633ca974e8f33", size = 141848, upload-time = "2026-11-28T15:07:27.978Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/4c/79/c0c10e34711f13258ab0f4299b1cd1eef4253298bb1e9f9131650a08ab87/courts_db-0.10.27-py3-none-any.whl", hash = "sha256:3b47638caeaa30222231e754af3472273dfe8056d0fbd73da7f5d6857b99f27c", size = 148703, upload-time = "2026-03-25T18:45:58.664Z" },
+    { url = "https://files.pythonhosted.org/packages/47/e1/2d94c7a6dbe18d0899abdfba0d6fa74c3a4e5f3d9ddc2b3e5fb9a3ca2404/courts_db-0.10.28-py3-none-any.whl", hash = "sha256:ac13819ffd6151f97e1f1d23f718b1d7379a806964ca27797a991d7098febc7b", size = 151073, upload-time = "2026-11-28T15:07:26.14Z" },
 ]
 
 [[package]]
@@ -1551,8 +1554,8 @@ name = "httpcore2"
 version = "2.13.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "h11" },
-    { name = "truststore" },
+    { name = "h11", marker = "sys_platform != 'emscripten'" },
+    { name = "truststore", marker = "sys_platform != 'emscripten'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/cb/f3/1db7aa2bc2524062192bb0e0323969492d1883152a232fe36eea65f4e35c/httpcore2-2.13.1.tar.gz", hash = "sha256:e0aa977abe17e69a3b820a24542a6fa88702676d83880b8d194dcd18408e5103", size = 68071, upload-time = "2026-09-23T07:47:22.372Z" }
 wheels = [
@@ -1923,7 +1926,7 @@ wheels = [
 
 [[package]]
 name = "juriscraper"
-version = "4.0.5"
+version = "4.0.6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "certifi" },
@@ -1940,9 +1943,9 @@ dependencies = [
     { name = "pydantic" },
     { name = "python-dateutil" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/dc/17/16bc74627ca4b9522ee5c27778906836a38429d9efda28fc507ccd6fdb2d/juriscraper-4.0.5.tar.gz", hash = "sha256:7462f2e1e981691a30c1c5eb8ad667fd7c87adbc6924420457522a30b7cc60e3", size = 498474, upload-time = "2026-11-23T19:46:34.213Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ab/b6/01f69ae4a02e368dd2d6ccffceedfe98dd67b00dbab81575eea7b07025c6/juriscraper-4.0.6.tar.gz", hash = "sha256:e30d67ac1639393e20708273062e99a3d6ac992e0c298c8a762d635738a0964a", size = 501271, upload-time = "2026-11-26T18:21:59.491Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/87/b4/cf1e67c9e2f53c0e98031ac87e68c7ac2228c408f0b60ceecfd380d5eed5/juriscraper-4.0.5-py3-none-any.whl", hash = "sha256:89f51c5046c5805b02ae9abac9d34498e5975909977b32bbe722b4bd673d9e76", size = 748999, upload-time = "2026-11-23T19:46:32.081Z" },
+    { url = "https://files.pythonhosted.org/packages/c7/0c/276f2b4f17dc73faa0b957ab118fcb2c00b20a4439727a04b2d48f5cb994/juriscraper-4.0.6-py3-none-any.whl", hash = "sha256:7351c9e423528199a2e0c39115493c3c8a5fb6dfc3276f55b3b6c3acae75f8c1", size = 752340, upload-time = "2026-11-26T18:21:57.3Z" },
 ]
 
 [[package]]
@@ -2453,7 +2456,7 @@ name = "pexpect"
 version = "4.9.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "ptyprocess" },
+    { name = "ptyprocess", marker = "sys_platform != 'emscripten' and sys_platform != 'win32'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/42/92/cc564bf6381ff43ce1f4d06852fc19a2f11d180f23dc32d9588bee2f149d/pexpect-4.9.0.tar.gz", hash = "sha256:ee7d41123f3c9911050ea2c2dac107568dc43b2d3b0c7557a33212c398ead30f", size = 166450, upload-time = "2023-11-25T09:07:26.339Z" }
 wheels = [
