@@ -1752,13 +1752,6 @@
       "severity": "error"
     },
     {
-      "column": 13,
-      "path": "cl/recap/tasks.py",
-      "name": "bad-argument-type",
-      "concise_description": "Argument `list[ACMSAttachmentPageDataAttachment]` is not assignable to parameter `attachment_dicts` with type `list[_MergeAttachmentDict]` in function `cl.recap.mergers.merge_attachment_page_data`",
-      "severity": "error"
-    },
-    {
       "column": 28,
       "path": "cl/recap/tasks.py",
       "name": "bad-assignment",
@@ -2337,20 +2330,6 @@
       "path": "cl/scrapers/utils.py",
       "name": "missing-attribute",
       "concise_description": "Object of class `CitationBase` has no attribute `corrected_page`",
-      "severity": "error"
-    },
-    {
-      "column": 20,
-      "path": "cl/scrapers/utils.py",
-      "name": "bad-index",
-      "concise_description": "Cannot index into `tuple[Pattern[Unknown], Unknown, Unknown, Unknown, Unknown, Unknown]`",
-      "severity": "error"
-    },
-    {
-      "column": 18,
-      "path": "cl/scrapers/utils.py",
-      "name": "bad-index",
-      "concise_description": "Cannot index into `tuple[Pattern[Unknown], Unknown, Unknown, Unknown, Unknown, Unknown]`",
       "severity": "error"
     },
     {
